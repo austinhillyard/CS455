@@ -8,27 +8,24 @@ void RayTracer::buildScreenAndRays() {
     double x_extent = tan(fov / 2.0) * camera_z_position;
 
     double pixel_size_y = (y_extent * 2) / screen_height;
-    double pixel_size_x = (x_extent * 2) / screen_height;
+    double pixel_size_x = (x_extent * 2) / screen_width;
 
     //Start at top left pixel center
     double top_left_pixel_center_x = -x_extent + pixel_size_x;
     Pixel cur_pixel = Pixel(-x_extent + pixel_size_x, y_extent);
     for (unsigned int i = 0; i < screen_height; i++) {
         for (unsigned int j = 0; j < screen_width; j++) {
-            rays[i][j] = new Ray(point3(0, 0, camera_z_position), vec3(cur_pixel.x, cur_pixel.y, 0));
+
+            rays[i][j] = new Ray(point3(0, 0, camera_z_position), unit_vector(vec3(cur_pixel.x, cur_pixel.y, -camera_z_position)));
             cur_pixel.x  += pixel_size_x;
         }
-        cur_pixel.y += pixel_size_y;
+        cur_pixel.y -= pixel_size_y;
         cur_pixel.x = top_left_pixel_center_x;
     }
 }
 
 //Simple constructor that sets up stuff and calls the build screen function
-RayTracer::RayTracer(unsigned int screen_width, unsigned int screen_height, double fov, double camera_z_position) {
-    screen_width = screen_width;
-    screen_height = screen_height;
-    fov = fov;
-    camera_z_position = camera_z_position;
+RayTracer::RayTracer(unsigned int screen_width, unsigned int screen_height, double fov, double camera_z_position): screen_width(screen_width), screen_height(screen_height), fov(fov), camera_z_position(camera_z_position) {
 
     //Build Screen
     rays = std::vector<std::vector<Ray*>>(screen_height, std::vector<Ray*>(screen_width, NULL));
