@@ -6,7 +6,7 @@ BUILD_DIR = build
 
 TARGET = ray_tracer
 
-SRC = main.cpp ppmWriter.cpp RayTracer.cpp
+SRC = main.cpp ppmWriter.cpp RayTracer.cpp Shape.cpp
 
 OBJ = $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(SRC))
 

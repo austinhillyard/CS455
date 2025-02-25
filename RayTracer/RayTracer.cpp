@@ -13,9 +13,9 @@ void RayTracer::buildScreenAndRays() {
     //Start at top left pixel center
     double top_left_pixel_center_x = -x_extent + pixel_size_x;
     Pixel cur_pixel = Pixel(-x_extent + pixel_size_x, y_extent);
-    for (int i = 0; i < screen_height; i++) {
-        for (int j = 0; j < screen_width; j++) {
-            rays[i][j] = new ParametricRay(cur_pixel.x, cur_pixel.y, 0, 0, 0, camera_z_position);
+    for (unsigned int i = 0; i < screen_height; i++) {
+        for (unsigned int j = 0; j < screen_width; j++) {
+            rays[i][j] = new Ray(point3(0, 0, camera_z_position), vec3(cur_pixel.x, cur_pixel.y, 0));
             cur_pixel.x  += pixel_size_x;
         }
         cur_pixel.y += pixel_size_y;
@@ -23,7 +23,7 @@ void RayTracer::buildScreenAndRays() {
     }
 }
 
-//Simply constructor that sets up stuff and calls the build screen function
+//Simple constructor that sets up stuff and calls the build screen function
 RayTracer::RayTracer(unsigned int screen_width, unsigned int screen_height, double fov, double camera_z_position) {
     screen_width = screen_width;
     screen_height = screen_height;
@@ -31,32 +31,34 @@ RayTracer::RayTracer(unsigned int screen_width, unsigned int screen_height, doub
     camera_z_position = camera_z_position;
 
     //Build Screen
-    rays = std::vector<std::vector<ParametricRay*>>(screen_height, std::vector<ParametricRay*>(screen_width, NULL));
+    rays = std::vector<std::vector<Ray*>>(screen_height, std::vector<Ray*>(screen_width, NULL));
     buildScreenAndRays();
 }
 
 RayTracer::~RayTracer() {
-    for (int i = 0; i < screen_height; i++) {
-        for (int j = 0; j < screen_width; j++) {
+    for (unsigned int i = 0; i < screen_height; i++) {
+        for (unsigned int j = 0; j < screen_width; j++) {
             delete rays[i][j];
         }
     }
 }
 
 //Render a scene given some shapes, a directional light vector,, the color of the light, color of the background, and an optional file name.
-void RayTracer::renderScene(std::vector<Shape> shapes, double light_x, double light_y, double light_z, Color light_color, Color background, std::string filename="output") {
+void RayTracer::renderScene(std::vector<Shape*> shapes, vec3 light_dir, color light_color, color ambient_color, color background, std::string filename="output") {
     //Get a PPMWriter for our output
     PPMWriter writer(filename, screen_width, screen_height);
 
     //iterate through rays
-    for (int i = 0; i < screen_height; i++) {
-        for (int j = 0; j < screen_width; j++) {
+    for (unsigned int i = 0; i < screen_height; i++) {
+        for (unsigned int j = 0; j < screen_width; j++) {
+
+            //Need to make this its own function, will be easier via recursion, or some sort of branch and bound queue.
             //Iterate though shapes to see which has the earliest contact point.
             double min_t;
             int closest_shape = -1;
-            for (int k = 0; k < shapes.size(); k++) {
-                ParametricRay* cur_ray = rays[i][j];
-                double t = shapes[k].findRayCollision(cur_ray->x0,  cur_ray->y0, cur_ray->z0, cur_ray->xd, cur_ray->yd, cur_ray->zd);
+            Ray* cur_ray = rays[i][j];
+            for (long unsigned int k = 0; k < shapes.size(); k++) {
+                double t = shapes[k]->findRayCollision(cur_ray->origin(), cur_ray->direction());
                 //If t is less than zero, continue immediately.
                 if (t < 0) {
                     continue;
@@ -76,11 +78,25 @@ void RayTracer::renderScene(std::vector<Shape> shapes, double light_x, double li
             //After earliest contact point is found, calculate color
             //Or draw background color if no closest shape
             if (closest_shape == -1) {
-                writer.write_next_pixel(background.red, background.green, background.blue);
+                writer.write_next_pixel(background);
                 continue;
             }
+            //Calculate intersection point via t
+            point3 intersection = cur_ray->at(min_t);
+
+            //TODO: Implement some sort of queue where given the intersection we add a new ray to calculate for RayTracer_2
             //Calculate color
-            // TODO
+            vec3 normal = shapes[closest_shape]->returnNormal(intersection);
+            color ray_color = shapes[closest_shape]->illuminationEquation(normal, light_dir, cur_ray->direction(), light_color, ambient_color);
+
+            //Write color out to output image
+            writer.write_next_pixel(ray_color);
         }
     }
+}
+
+//Might use this function later
+color RayTracer::calculateColor(Shape& shape, vec3 light_dir, color light_color, point3 intersection) {
+    
+    return color();
 }

@@ -1,11 +1,11 @@
 #include "Shape.h"
 #include <cmath>
 
-double Sphere::findRayCollision(double x0, double y0, double z0, double xd, double yd, double zd) {
+double Sphere::findRayCollision(const point3 ori, const vec3 dir) {
     // Calculate the B term of the quadratic equation
-    double B = 2.0 * (xd * x0 - xd * center_x + yd * y0 - yd * center_y + zd * z0 - zd * center_z);
+    double B = 2.0 * (dir.x() * ori.x() - dir.x() * center.x() + dir.y() * ori.y() - dir.y() * center.y() + dir.z() * ori.z() - dir.z() * center.z());
     // Calculate the C term of the quadratic equation
-    double C = pow(x0, 2.0) - 2.0 * x0 * center_x + pow(center_x, 2.0) + pow(y0, 2.0) - 2.0 * y0 * center_y + pow(center_y, 2.0) + pow(z0, 2.0) - 2.0 * z0 * center_z + pow(center_z, 2.0) - pow(radius, 2.0);
+    double C = pow(ori.x(), 2.0) - 2.0 * ori.x() * center.x() + pow(center.x(), 2.0) + pow(ori.y(), 2.0) - 2.0 * ori.y() * center.y() + pow(center.y(), 2.0) + pow(ori.z(), 2.0) - 2.0 * ori.z() * center.z() + pow(center.z(), 2.0) - pow(radius, 2.0);
     // Calculate discriminate to determine culling
     double discriminant = pow(B, 2.0) - 4 * C;
 
@@ -35,7 +35,8 @@ double Sphere::findRayCollision(double x0, double y0, double z0, double xd, doub
 }
 
 // Returns the normal vector given a point on the circle.
-Ray Sphere::returnNormal(double x, double y, double z) {
-    Ray normal = Ray((x-center_x)/radius, (y-center_y)/radius, (z-center_z)/radius);
+vec3 Sphere::returnNormal(point3 point) {
+    vec3 normal = point - center;
+    normal /= radius;
     return normal;
 }

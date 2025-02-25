@@ -1,5 +1,19 @@
 #include "ppmWriter.h"
 
+void PPMWriter::write_color(std::ostream& out, const color& pixel_color) {
+    auto r = pixel_color.x();
+    auto g = pixel_color.y();
+    auto b = pixel_color.z();
+
+    // Translate the [0,1] component values to the byte range [0,255].
+    int rbyte = int(255.999 * r);
+    int gbyte = int(255.999 * g);
+    int bbyte = int(255.999 * b);
+
+    // Write out the pixel color components.
+    out << rbyte << ' ' << gbyte << ' ' << bbyte << '\n';
+}
+
 // Constructor for PPMWriter, default file size of 500 by 500
 PPMWriter::PPMWriter(std::string filename = "default", unsigned int width = 500, unsigned int height = 500) {
     this->screen_width = width;
@@ -20,8 +34,8 @@ PPMWriter::~PPMWriter() {
 }
 
 // Starts at the first pixel, and increments the next value to write after being called.
-void PPMWriter::write_next_pixel(uint8_t red, uint8_t green, uint8_t blue) {
-    PPMFile << std::to_string(red) << " " << std::to_string(green) << " " << std::to_string(blue) << " ";
+void PPMWriter::write_next_pixel(color nextColor) {
+    write_color(PPMFile, nextColor);
     next_byte += 1;
 }
 

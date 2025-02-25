@@ -1,7 +1,11 @@
+#ifndef PPM_WRITER
+#define PPM_WRITER
+
 #include <iostream>
 #include <fstream>
 #include <cstdint>
 #include <string>
+#include "vec3.h"
 
 class PPMWriter {
     private:
@@ -9,6 +13,7 @@ class PPMWriter {
         unsigned int screen_height;
         unsigned long next_byte = 0;
         std::ofstream PPMFile;
+        void write_color(std::ostream& out, const color& pixel_color);
         
 
     public:
@@ -17,7 +22,7 @@ class PPMWriter {
         ~PPMWriter();
 
         // Starts at the first pixel, and increments the next value to write after being called.
-        void write_next_pixel(uint8_t red, uint8_t green, uint8_t blue);
+        void write_next_pixel(color nextColor);
 
         //Returns the position of the next byte to be written when write_next_byte is called
         unsigned long get_next_pixel();
@@ -25,3 +30,5 @@ class PPMWriter {
         //Close the file manually if the user is kind enough to do so.
         void close_file();
 };
+
+#endif
