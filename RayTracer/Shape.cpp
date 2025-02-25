@@ -1,7 +1,7 @@
 #include "Shape.h"
 #include <cmath>
 
-double Sphere::findRayCollision(float x0, float y0, float z0, float xd, float yd, float zd) {
+double Sphere::findRayCollision(double x0, double y0, double z0, double xd, double yd, double zd) {
     // Calculate the B term of the quadratic equation
     double B = 2.0 * (xd * x0 - xd * center_x + yd * y0 - yd * center_y + zd * z0 - zd * center_z);
     // Calculate the C term of the quadratic equation
@@ -32,4 +32,10 @@ double Sphere::findRayCollision(float x0, float y0, float z0, float xd, float yd
     // And then the second if the first one isn't a positive number.
     double t1 = (-B - square_root) / 2.0;
     return t1;
+}
+
+// Returns the normal vector given a point on the circle.
+Ray Sphere::returnNormal(double x, double y, double z) {
+    Ray normal = Ray((x-center_x)/radius, (y-center_y)/radius, (z-center_z)/radius);
+    return normal;
 }
