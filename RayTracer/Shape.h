@@ -41,7 +41,10 @@ class Shape {
         virtual vec3 returnNormal(point3 intersection) = 0;
         color illuminationEquation(vec3 normal, vec3 light_dir, vec3 view_dir, color light_color, color ambient_color) {
             vec3 R = (2 * (dot(light_dir, normal) * normal)) - light_dir;
-            color output = Ka*ambient_color*Od + Kd*light_color*Od*std::max(0.0, dot(normal, light_dir)) + Ks*light_color*Os*std::max(0.0, pow(dot(view_dir, R), Kgls));
+            color ambient_light = Ka*ambient_color*Od;
+            color diffuse_light = Kd*light_color*Od*std::max(0.0, dot(normal, light_dir));
+            color specular_light = Ks*light_color*Os* pow(std::max(0.0, dot(-view_dir, R)), Kgls);
+            color output = ambient_light + diffuse_light + specular_light;
             return output;
         }
 };

@@ -4,8 +4,8 @@
 
 //Uses the screen width, height, field of view and camera position to calculate pixel sizes and builds a 2d vector of rays.
 void RayTracer::buildScreenAndRays() {
-    double y_extent = tan(fov / 2.0) * camera_z_position;
-    double x_extent = tan(fov / 2.0) * camera_z_position;
+    double y_extent = tan(fov / 4.0) * camera_z_position;
+    double x_extent = tan(fov / 4.0) * camera_z_position;
 
     double pixel_size_y = (y_extent * 2) / screen_height;
     double pixel_size_x = (x_extent * 2) / screen_width;
@@ -51,7 +51,7 @@ void RayTracer::renderScene(std::vector<Shape*> shapes, vec3 light_dir, color li
 
             //Need to make this its own function, will be easier via recursion, or some sort of branch and bound queue.
             //Iterate though shapes to see which has the earliest contact point.
-            double min_t;
+            double min_t = -1;
             int closest_shape = -1;
             Ray* cur_ray = rays[i][j];
             for (long unsigned int k = 0; k < shapes.size(); k++) {
@@ -60,13 +60,8 @@ void RayTracer::renderScene(std::vector<Shape*> shapes, vec3 light_dir, color li
                 if (t < 0) {
                     continue;
                 }
-                //Else if the first shape, min_t is the first answer
-                else if (k == 0) {
-                    min_t = t;
-                    closest_shape = k;
-                }
-                //Otherwise, check if new t is closer than previous t.
-                else if (min_t > t) {
+                //Otherwise, check if new t is closer than previous t, or if there is no minimum yet, set it t.
+                else if (min_t == -1 || min_t > t) {
                     min_t = t;
                     closest_shape = k;
                 }
