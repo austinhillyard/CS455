@@ -30,7 +30,7 @@ double Sphere::findRayCollision(const point3 ori, const vec3 dir) {
         return t0;
     }
     // And then the second if the first one isn't a positive number.
-    double t1 = (-B - square_root) / 2.0;
+    double t1 = (-B + square_root) / 2.0;
     return t1;
 }
 
@@ -39,4 +39,18 @@ vec3 Sphere::returnNormal(point3 point) {
     vec3 normal = point - center;
     normal /= radius;
     return normal;
+}
+
+double Triangle::findRayCollision(const point3 origin, const vec3 dir) {
+    //Conduct Planar collision test first
+    double pnrd = dot(normal, dir);
+    // If equal to 0, ray is parallel to the plane and does not intersect
+    if (fabs(pnrd) < 1e-5) {
+        return -1.0f;
+    }
+    // If greater than 0, normal of plane is pointing away from the ray and the plane is culled
+    else if (pnrd > 0) {
+        return -1.0f;
+    }
+    // Otherwise solve for t
 }
