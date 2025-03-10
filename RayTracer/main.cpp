@@ -44,11 +44,17 @@ void MANYSPHERES() {
 
 }
 
+void TRI_SCENE_2() {
+
+    RayTracer myTracer(500, 500, 90, 1);
+    std::vector<Shape*> shapes;
+    shapes.push_back(new Sphere(MaterialProperties(0, .1, .1, color(.75, .75, .75), color(1, 1, 1), 10, .9), vec3(0, .3, -1.0), .25));
+    shapes.push_back(new Triangle(MaterialProperties(), vec3(), vec3(), vec3()))
+}
+
 int main(int argc, char** argv) {
     
-    //purpleSphere();
-    moreSpheres();
-    MANYSPHERES();
+
 
     return 0;
 }

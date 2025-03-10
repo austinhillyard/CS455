@@ -77,6 +77,11 @@ void RayTracer::renderScene(std::vector<Shape*> shapes, vec3 light_dir, color li
             point3 intersection = cur_ray->at(min_t);
 
             //TODO: Implement some sort of queue where given the intersection we add a new ray to calculate for RayTracer_2
+
+            //Shadow Ray
+
+            //Reflection Ray
+
             //Calculate color
             vec3 normal = shapes[closest_shape]->returnNormal(intersection);
             color ray_color = shapes[closest_shape]->illuminationEquation(normal, light_dir, cur_ray->direction(), light_color, ambient_color);
