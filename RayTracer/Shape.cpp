@@ -49,18 +49,21 @@ double Triangle::findRayCollision(const point3 origin, const vec3 dir) {
         return -1.0f;
     }
     // If greater than 0, normal of plane is pointing away from the ray and the plane is culled
-    else if (pnrd > 0) {
-        return -1.0f;
-    }
+    // else if (pnrd > 0) {
+    //     return -1.0f;
+    // }
     // Otherwise solve for t
     double t = -(dot(normal, origin) + d) / pnrd;
     
     //Calculate intersection
     point3 p = origin + t * dir;
     // Check that the collision is in the convex polygon.
-    double edge1 = dot(cross(p - vertex0, vertex1 - vertex0), normal);
-    double edge2 = dot(cross(p - vertex1, vertex2 - vertex1), normal);
-    double edge3 = dot(cross(p - vertex2, vertex0 - vertex2), normal);
+    vec3 cross1 = cross(vertex1 - vertex0, p - vertex0);
+    vec3 cross2 = cross(vertex2 - vertex1, p - vertex1);
+    vec3 cross3 = cross(vertex0 - vertex2, p - vertex2);
+    double edge1 = dot(cross1, normal);
+    double edge2 = dot(cross2, normal);
+    double edge3 = dot(cross3, normal);
 
     if (edge1 > 0 && edge2 > 0 && edge3 > 0) {
         return t;

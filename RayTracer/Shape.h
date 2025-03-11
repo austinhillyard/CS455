@@ -39,7 +39,6 @@ class Shape {
     public:
         //Struct with all lighting and material properties
         MaterialProperties matt;
-        float reflection;
 
         Shape(MaterialProperties material): matt(material) {}
         virtual ~Shape() = default;

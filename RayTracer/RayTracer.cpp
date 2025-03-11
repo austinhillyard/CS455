@@ -48,49 +48,81 @@ void RayTracer::renderScene(std::vector<Shape*> shapes, vec3 light_dir, color li
     //iterate through rays
     for (unsigned int i = 0; i < screen_height; i++) {
         for (unsigned int j = 0; j < screen_width; j++) {
+            color pixelColor = renderRayColor(shapes, rays[i][j], light_dir, light_color, ambient_color, background);
+            writer.write_next_pixel(pixelColor);
+        }
+    }
 
-            //Need to make this its own function, will be easier via recursion, or some sort of branch and bound queue.
-            //Iterate though shapes to see which has the earliest contact point.
-            double min_t = -1;
-            int closest_shape = -1;
-            Ray* cur_ray = rays[i][j];
-            for (long unsigned int k = 0; k < shapes.size(); k++) {
-                double t = shapes[k]->findRayCollision(cur_ray->origin(), cur_ray->direction());
-                //If t is less than zero, continue immediately.
-                if (t < 0) {
-                    continue;
-                }
-                //Otherwise, check if new t is closer than previous t, or if there is no minimum yet, set it t.
-                else if (min_t == -1 || min_t > t) {
-                    min_t = t;
-                    closest_shape = k;
-                }
-            }
+    writer.close_file();
+}
 
-            //After earliest contact point is found, calculate color
-            //Or draw background color if no closest shape
-            if (closest_shape == -1) {
-                writer.write_next_pixel(background);
-                continue;
-            }
-            //Calculate intersection point via t
-            point3 intersection = cur_ray->at(min_t);
+color RayTracer::renderRayColor(std::vector<Shape*> shapes, Ray* cur_ray, vec3 light_dir, color light_color, color ambient_color, color background, int ray_depth) {
+    //Find closest ray interesection
+    double min_t = -1;
+    Shape* closest_shape = NULL;
+    findRayFirstIntersection(shapes, cur_ray, min_t, closest_shape);
 
-            //TODO: Implement some sort of queue where given the intersection we add a new ray to calculate for RayTracer_2
+    //After earliest contact point is found, calculate color
+    //Or draw background color if no closest shape
+    if (closest_shape == NULL) {
+        return background;
+    }
+    //Calculate intersection point via t
+    point3 intersection = cur_ray->at(min_t);
+    vec3 closest_shape_normal = closest_shape->returnNormal(intersection);
+    //Move a tiny bit away from the object to avoid shadow ray hitting the same object.
+    point3 slightIntersectionOffset = intersection + closest_shape_normal * .01;
 
-            //Shadow Ray
+    //Reflection Ray
+    //Only calculate reflection if object is reflective, and current ray is not a secondary ray.
+    //Default reflection of nothing
+    color reflectionColor = color(0, 0, 0);
+    if (closest_shape->matt.reflection > 0.0 && ray_depth < 2) {
+        Ray reflection = Ray(slightIntersectionOffset, cur_ray->direction() - 2*closest_shape_normal * dot(cur_ray->direction(), closest_shape_normal));
+        //Overwrite reflection color
+        reflectionColor = renderRayColor(shapes, &reflection, light_dir, light_color, ambient_color, background, true);
+    } else {
+        //Shadow Ray, only calculate if not reflective surface
+        Ray shadowRay = Ray(slightIntersectionOffset, light_dir);
+        min_t = -1;
+        Shape* closest_shape_from_shadow = NULL;
+        //Find first intersection for shadow ray
+        findRayFirstIntersection(shapes, &shadowRay, min_t, closest_shape_from_shadow);
+        //If no intersection, not in shadow, continue.
+        //Otherwise, in shadow, draw black.
+        if (closest_shape_from_shadow != NULL) {
+            //return color(0, 0, 0) + ambient_color * closest_shape->matt.Ka;
+            light_color = color(0,0,0);
+        }
+    }
+    
+    
 
-            //Reflection Ray
+    //Calculate color
+    color ray_color = closest_shape->illuminationEquation(closest_shape_normal, light_dir, cur_ray->direction(), light_color, ambient_color);
 
-            //Calculate color
-            vec3 normal = shapes[closest_shape]->returnNormal(intersection);
-            color ray_color = shapes[closest_shape]->illuminationEquation(normal, light_dir, cur_ray->direction(), light_color, ambient_color);
+    //Write color out to output image
+    //Weight intersection color by opposite of reflection level and add reflection value
+    color final_color = ray_color * (1 - closest_shape->matt.reflection) + closest_shape->matt.reflection * reflectionColor;
+    return final_color;
+}
 
-            //Write color out to output image
-            writer.write_next_pixel(ray_color);
+//Iterate though shapes to see which has the earliest contact point.
+void RayTracer::findRayFirstIntersection(std::vector<Shape*> shapes, Ray* cur_ray, double& min_t, Shape*& closest_shape) {
+    for (long unsigned int k = 0; k < shapes.size(); k++) {
+        double t = shapes[k]->findRayCollision(cur_ray->origin(), cur_ray->direction());
+        //If t is less than zero, continue immediately.
+        if (t < 0) {
+            continue;
+        }
+        //Otherwise, check if new t is closer than previous t, or if there is no minimum yet, set it t.
+        else if (min_t == -1 || min_t > t) {
+            min_t = t;
+            closest_shape = shapes[k];
         }
     }
 }
+
 
 //Might use this function later
 color RayTracer::calculateColor(Shape& shape, vec3 light_dir, color light_color, point3 intersection) {

@@ -23,6 +23,8 @@ class RayTracer {
 
         void buildScreenAndRays();
         color calculateColor(Shape& shape, vec3 light_dir, color light_color, point3 intersection);
+        void findRayFirstIntersection(std::vector<Shape*> shapes, Ray* cur_ray, double& min_t, Shape*& closest_shape);
+        color renderRayColor(std::vector<Shape*> shapes, Ray* cur_ray, vec3 light_dir, color light_color, color ambient_color, color background, int ray_depth = 0);
 
     public:
         // Takes in a screen size, and the camera position on the z axis. 
