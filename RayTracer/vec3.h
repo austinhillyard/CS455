@@ -1,3 +1,8 @@
+/*
+This vec3 class code is from https://raytracing.github.io/books/RayTracingInOneWeekend.html#thevec3class
+
+*/
+
 #ifndef VEC3_H
 #define VEC3_H
 
